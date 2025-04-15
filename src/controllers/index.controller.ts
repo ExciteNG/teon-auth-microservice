@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 class IndexController {
   public index = (req: Request, res: Response, next: NextFunction) => {
     try {
-      res.status(200).send('Welcome to Excite Trade API');
+      res.status(200).send('Welcome to Teon Suites Auth Service');
     } catch (error) {
       next(error);
     }

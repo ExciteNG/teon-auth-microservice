@@ -43,7 +43,6 @@ const userSchema = new Schema<IUser>(
       lastName: { type: String },
     },
     username: { type: String, unique: true },
-    bio: { type: String },
     apps: [
       {
         name: { type: String },

@@ -1,15 +1,15 @@
 import z from 'zod';
 
-export const offtakerSignupSchema = z.object({
-  body: z.object({
-    country: z.string(),
-    email: z.string().email(),
-    password: z.string().min(8, 'password must have a minimum of 8 characters'),
-    userType: z.string(),
-  }),
-});
+// export const offtakerSignupSchema = z.object({
+//   body: z.object({
+//     country: z.string(),
+//     email: z.string().email(),
+//     password: z.string().min(8, 'password must have a minimum of 8 characters'),
+//     userType: z.string(),
+//   }),
+// });
 
-export type offtakerSignupDto = z.infer<typeof offtakerSignupSchema>;
+// export type offtakerSignupDto = z.infer<typeof offtakerSignupSchema>;
 
 export const signupSchema = z.object({
   body: z.object({
@@ -17,10 +17,15 @@ export const signupSchema = z.object({
     country: z.string().optional(),
     email: z.string().email(),
     password: z.string().min(8, 'password must have a minimum of 8 characters'),
+    firstName: z.string(),
+    lastName: z.string(),
+    username: z.string().optional(),
+    gender: z.string(),
+    language: z.string().optional(),
   }),
 });
 
-export type signupDto = z.infer<typeof offtakerSignupSchema>;
+export type signupDto = z.infer<typeof signupSchema>;
 
 export const verifyUserSchema = z.object({
   params: z.object({
