@@ -8,7 +8,6 @@ import {
   verifyUserDto,
 } from '@/validator/auth.validator';
 import { NextFunction, Request, Response } from 'express';
-import { StatusCodes } from 'http-status-codes';
 
 class AuthController {
   public authService = new AuthService(); // Assuming you have an AuthService class
@@ -22,7 +21,7 @@ class AuthController {
       const userData = req.body; // Assuming the request body contains user data
       const signUpUserData = await this.authService.signup(userData); // Call the signup method from AuthService
 
-      res.status(StatusCodes.CREATED).json({
+      res.status(201).json({
         message: 'User created successfully',
         data: signUpUserData,
       });
@@ -42,7 +41,7 @@ class AuthController {
         confirmationCode,
       }); // Call the verifyUser method from AuthService
 
-      res.status(StatusCodes.OK).json({
+      res.status(200).json({
         message: 'User verified successfully',
         data: verifiedUserData,
       });
@@ -61,7 +60,7 @@ class AuthController {
       const resendVerificationData =
         await this.authService.resendVerification(body); // Call the resendVerification method from AuthService
 
-      res.status(StatusCodes.OK).json({
+      res.status(200).json({
         message: 'Verification email resent successfully',
         data: resendVerificationData,
       });
@@ -80,7 +79,7 @@ class AuthController {
       const loggedinUserData = await this.authService.login(userData); // Call the signup method from AuthService
 
       res.setHeader('Set-Cookie', [loggedinUserData.cookie]);
-      res.status(StatusCodes.OK).json({
+      res.status(200).json({
         message: 'User loggedin successfully',
         data: loggedinUserData,
       });
@@ -99,9 +98,7 @@ class AuthController {
       const logOutUserData: IUser = await this.authService.logout(userData);
 
       res.setHeader('Set-Cookie', ['Authorization=; Max-age=0']);
-      res
-        .status(StatusCodes.OK)
-        .json({ data: logOutUserData, message: 'logout' });
+      res.status(200).json({ data: logOutUserData, message: 'logout' });
     } catch (error) {
       next(error);
     }
