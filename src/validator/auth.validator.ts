@@ -13,14 +13,14 @@ import z from 'zod';
 
 export const signupSchema = z.object({
   body: z.object({
+    firstName: z.string(),
+    lastName: z.string(),
     phoneNumber: z.string().optional(),
     country: z.string().optional(),
     email: z.string().email(),
     password: z.string().min(8, 'password must have a minimum of 8 characters'),
-    firstName: z.string(),
-    lastName: z.string(),
-    username: z.string().optional(),
-    gender: z.string(),
+    username: z.string(),
+    gender: z.enum(['Male', 'Female']),
     language: z.string().optional(),
   }),
 });

@@ -8,21 +8,27 @@ import {
   loginDto,
   resendVerificationDto,
   signupDto,
+  verifyUserDto,
 } from '@/validator/auth.validator';
 import EmailService from './email.service';
 import { HttpException } from '@/exceptions/HttpException';
+import { StatusCodes } from 'http-status-codes';
 
 class AuthService {
   public users = User;
   public emailService = new EmailService();
 
   public async signup(userData: signupDto['body']) {
-    if (!userData) throw new Error('userData is empty');
+    if (!userData)
+      throw new HttpException(StatusCodes.BAD_REQUEST, 'userData is empty');
 
     const findUser: IUser = await this.users.findOne({ email: userData.email });
 
     if (findUser)
-      throw new Error(`This email ${userData.email} already exists`);
+      throw new HttpException(
+        StatusCodes.BAD_REQUEST,
+        `This email ${userData.email} already exists`
+      );
 
     const hashedPassword = await hash(userData.password, 10);
 
@@ -48,19 +54,28 @@ class AuthService {
       });
   }
 
-  public async verifyUser(confirmationCode: string): Promise<IUser> {
-    if (!confirmationCode) throw new Error('confirmation code is empty');
+  public async verifyUser({
+    confirmationCode,
+  }: verifyUserDto['params']): Promise<IUser> {
+    if (!confirmationCode)
+      throw new HttpException(
+        StatusCodes.BAD_REQUEST,
+        'confirmation code is empty'
+      );
 
     const findUser: IUser = await this.users.findOne({ confirmationCode });
 
-    if (!findUser) throw new Error('Invalid token');
+    if (!findUser)
+      throw new HttpException(StatusCodes.UNAUTHORIZED, 'Invalid token');
 
-    const isTokenValid = verify(confirmationCode, SECRET_KEY);
-
-    if (!isTokenValid)
-      throw new Error(
-        'The confirmation code has expired. Kindly request for a new code'
+    try {
+      verify(confirmationCode, SECRET_KEY);
+    } catch (error) {
+      throw new HttpException(
+        StatusCodes.FORBIDDEN,
+        'Invalid or expired confirmation code'
       );
+    }
 
     findUser.isVerified = true;
     findUser.emailVerified = true;
@@ -71,12 +86,21 @@ class AuthService {
   }
 
   public async resendVerification(body: resendVerificationDto['body']) {
-    if (!body) throw new Error('body is empty');
+    if (!body)
+      throw new HttpException(StatusCodes.BAD_REQUEST, 'body is empty');
 
     const user = await this.users.findOne({ email: body.email });
-    if (!user) throw new HttpException(401, 'User does not exist');
 
-    user.confirmationCode = this.createToken(user).token;
+    if (!user)
+      throw new HttpException(StatusCodes.UNAUTHORIZED, 'User does not exist');
+
+    if (user.isVerified)
+      throw new HttpException(
+        StatusCodes.BAD_REQUEST,
+        'User is already verified'
+      );
+
+    user.confirmationCode = this.createToken(user, 60 * 10).token;
     await user.save();
 
     this.emailService
@@ -89,25 +113,37 @@ class AuthService {
         return { ...user, password: undefined, confirmationCode: undefined };
       })
       .catch((err) => {
-        throw new HttpException(400, 'Error resending verification mail');
+        throw new HttpException(
+          StatusCodes.BAD_REQUEST,
+          'Error resending verification mail'
+        );
       });
   }
 
   public async login(
     userData: loginDto['body']
   ): Promise<{ cookie: string; user: IUser; token: string }> {
-    if (!userData) throw new Error('userData is empty');
+    if (!userData)
+      throw new HttpException(StatusCodes.BAD_REQUEST, 'userData is empty');
 
     const findUser: IUser = await this.users.findOne({ email: userData.email });
 
-    if (!findUser) throw new Error('Wrong email or password');
+    if (!findUser)
+      throw new HttpException(
+        StatusCodes.UNAUTHORIZED,
+        'Wrong email or password'
+      );
 
     const isPasswordMatching = await compare(
       userData.password,
       findUser.password
     );
 
-    if (!isPasswordMatching) throw new Error('Wrong email or password');
+    if (!isPasswordMatching)
+      throw new HttpException(
+        StatusCodes.UNAUTHORIZED,
+        'Wrong email or password'
+      );
 
     if (!findUser.isVerified) {
       findUser.confirmationCode = this.createToken(findUser).token;
@@ -132,9 +168,7 @@ class AuthService {
 
     const user = await this.users
       .findById(findUser._id)
-      .select(
-        '-password -confirmationCode -verificationToken -verificationTokenExpiry -emailVerified -phoneVerified'
-      );
+      .select('-password  -verificationToken -verificationTokenExpiry');
 
     const tokenData = this.createToken(findUser);
     const cookie = this.createCookie(tokenData);

@@ -2,16 +2,12 @@ import { stat } from 'fs';
 import mongoose, { model, models, Schema, Document } from 'mongoose';
 
 export interface IUser extends Document {
-  name: {
-    firstName: string;
-    lastName: string;
-    fullName?: string;
-  };
-  bio?: string;
+  firstName: string;
+  lastName: string;
   apps?: Apps[];
   phoneNumber?: string;
   username?: string;
-  gender?: string;
+  gender: string;
   credit?: number;
   email: string;
   status?: string;
@@ -35,13 +31,9 @@ interface Apps {
 
 const userSchema = new Schema<IUser>(
   {
-    phoneNumber: {
-      type: String,
-    },
-    name: {
-      firstName: { type: String },
-      lastName: { type: String },
-    },
+    phoneNumber: { type: String },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
     username: { type: String, unique: true },
     apps: [
       {
@@ -53,7 +45,7 @@ const userSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     profileImage: { type: String },
-    gender: { type: String },
+    gender: { type: String, required: true },
     credit: { type: Number },
     language: { type: String },
     country: { type: String },
@@ -65,7 +57,7 @@ const userSchema = new Schema<IUser>(
     verificationToken: { type: String },
     verificationTokenExpiry: { type: Date },
   },
-  { timestamps: true, discriminatorKey: 'userType' }
+  { timestamps: true }
 );
 
 const User = model<IUser>('User', userSchema);

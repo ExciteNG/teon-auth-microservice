@@ -181,7 +181,7 @@ class AuthRoutes {
      *         description: Invalid input data
      */
     this.router.post(
-      `${this.path}/verify-user`,
+      `${this.path}/verify-user/:confirmationCode`,
       ValidationMiddleware(verifyUserSchema),
       this.authController.verifyUser
     );
