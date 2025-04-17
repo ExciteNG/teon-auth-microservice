@@ -1,26 +1,31 @@
 import z from 'zod';
 
-export const offtakerSignupSchema = z.object({
-  body: z.object({
-    country: z.string(),
-    email: z.string().email(),
-    password: z.string().min(8, 'password must have a minimum of 8 characters'),
-    userType: z.string(),
-  }),
-});
+// export const offtakerSignupSchema = z.object({
+//   body: z.object({
+//     country: z.string(),
+//     email: z.string().email(),
+//     password: z.string().min(8, 'password must have a minimum of 8 characters'),
+//     userType: z.string(),
+//   }),
+// });
 
-export type offtakerSignupDto = z.infer<typeof offtakerSignupSchema>;
+// export type offtakerSignupDto = z.infer<typeof offtakerSignupSchema>;
 
 export const signupSchema = z.object({
   body: z.object({
+    firstName: z.string(),
+    lastName: z.string(),
     phoneNumber: z.string().optional(),
     country: z.string().optional(),
     email: z.string().email(),
     password: z.string().min(8, 'password must have a minimum of 8 characters'),
+    username: z.string(),
+    gender: z.enum(['Male', 'Female']),
+    language: z.string().optional(),
   }),
 });
 
-export type signupDto = z.infer<typeof offtakerSignupSchema>;
+export type signupDto = z.infer<typeof signupSchema>;
 
 export const verifyUserSchema = z.object({
   params: z.object({

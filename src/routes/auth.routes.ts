@@ -1,4 +1,11 @@
 import AuthController from '@/controllers/auth.controller';
+import ValidationMiddleware from '@/middlewares/validation.middleware';
+import {
+  loginSchema,
+  resendVerificationSchema,
+  signupSchema,
+  verifyUserSchema,
+} from '@/validator/auth.validator';
 import { Router } from 'express';
 
 /**
@@ -103,7 +110,11 @@ class AuthRoutes {
      *       400:
      *         description: Invalid input data
      */
-    this.router.post(`${this.path}/register`, this.authController.signup);
+    this.router.post(
+      `${this.path}/register`,
+      ValidationMiddleware(signupSchema),
+      this.authController.signup
+    );
 
     /**
      * @swagger
@@ -123,7 +134,81 @@ class AuthRoutes {
      *       401:
      *         description: Invalid credentials
      */
-    this.router.post(`${this.path}/login`, this.authController.login);
+    this.router.post(
+      `${this.path}/login`,
+      ValidationMiddleware(loginSchema),
+      this.authController.login
+    );
+
+    /**
+     * @swagger
+     * /auth/logout:
+     *   post:
+     *     summary: Log out a user
+     *     tags: [Auth]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/LoginRequest'
+     *     responses:
+     *       200:
+     *         description: User logged out successfully
+     */
+    this.router.post(
+      `${this.path}/logout`,
+      ValidationMiddleware(loginSchema),
+      this.authController.logOut
+    );
+
+    /**
+     * @swagger
+     * /auth/verify-user:
+     *   post:
+     *     summary: Verify a user
+     *     tags: [Auth]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/SignupRequest'
+     *     responses:
+     *       200:
+     *         description: User verified successfully
+     *       400:
+     *         description: Invalid input data
+     */
+    this.router.post(
+      `${this.path}/verify-user/:confirmationCode`,
+      ValidationMiddleware(verifyUserSchema),
+      this.authController.verifyUser
+    );
+
+    /**
+     * @swagger
+     * /auth/resend-verification:
+     *   post:
+     *     summary: Resend verification email
+     *     tags: [Auth]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/ResendVerificationRequest'
+     *     responses:
+     *       200:
+     *         description: Verification email resent successfully
+     *       400:
+     *         description: Invalid input data
+     */
+    this.router.post(
+      `${this.path}/resend-verification`,
+      ValidationMiddleware(resendVerificationSchema),
+      this.authController.resendVerification
+    );
   }
 }
 

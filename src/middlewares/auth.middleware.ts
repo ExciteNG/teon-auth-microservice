@@ -7,6 +7,7 @@ import {
   RequestWithUser,
 } from '../interfaces/auth.interface';
 import User from '../models/users.model';
+import { StatusCodes } from 'http-status-codes';
 
 const authMiddleware = async (
   req: RequestWithUser,
@@ -33,13 +34,22 @@ const authMiddleware = async (
         req.user = findUser;
         next();
       } else {
-        next(new HttpException(401, 'Wrong authentication token'));
+        next(
+          new HttpException(
+            StatusCodes.UNAUTHORIZED,
+            'Wrong authentication token'
+          )
+        );
       }
     } else {
-      next(new HttpException(404, 'Authentication token missing'));
+      next(
+        new HttpException(StatusCodes.NOT_FOUND, 'Authentication token missing')
+      );
     }
   } catch (error) {
-    next(new HttpException(401, 'Wrong authentication token'));
+    next(
+      new HttpException(StatusCodes.UNAUTHORIZED, 'Wrong authentication token')
+    );
   }
 };
 
